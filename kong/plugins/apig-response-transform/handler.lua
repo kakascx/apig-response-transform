@@ -15,6 +15,7 @@ function TransferPlugin:access(config)
   TransferPlugin.super.access(self)
   --获取请求参数中的format参数
   format = kong.request.get_query_arg("Format")
+  action = kong.request.get_query_arg("Action")
 end
 
 function TransferPlugin:header_filter(config)
@@ -67,7 +68,12 @@ function TransferPlugin:body_filter(config)
 	         whole["requestId"]=requestId
 	      end
 	   end
-	   ngx.arg[1]=json2xml.toxml(whole)
+	   --增加公共请求参数action的开关
+	   if action ~=nil then
+	      ngx.arg[1] = "<" .. action .. "Response" .. ">" .. json2xml.toxml(whole) .. "</" .. action .. "Response" .. ">"
+	   else
+	      ngx.arg[1]=json2xml.toxml(whole)
+	   end
 	   ngx.arg[2]=true
 	   ngx.ctx.buffered = nil
 	end
