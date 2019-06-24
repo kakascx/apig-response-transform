@@ -1,10 +1,10 @@
 local BasePlugin = require "kong.plugins.base_plugin"
 local json2xml =require "kong.plugins.apig-response-transform.json2xml"
+local cjson = require "cjson.safe"
 local TransferPlugin = BasePlugin:extend()
 local format = format
 local contentType = contentType
-local contentLength
-local concat = table.concat
+local requestId
 
 function TransferPlugin:new()
   TransferPlugin.super.new(self, "apig-response-transform")
@@ -19,13 +19,13 @@ end
 function TransferPlugin:header_filter(config)
   TransferPlugin.super.header_filter(self)
   contentType = kong.response.get_header("Content-Type")
+  requestId = kong.response.get_header("Request-Id")
   if format == "xml" or format == nil then
 	if string.find(contentType,"application/json") then
 	kong.response.set_header("Content_Type","application/xml")
 	kong.response.clear_header("Content-Length")
 	end  
   end
---  kong.log(contentType)
 end
 
 function TransferPlugin:body_filter(config)
@@ -44,14 +44,19 @@ function TransferPlugin:body_filter(config)
 	end
 	if eof then
 	local whole = table.concat(buffered)
-	--kong.log("whole is",whole)
-	ngx.ctx.buffered = nil
-	whole = json2xml.toxml(config,whole)
-	contentLength = string.len(whole)
-	--kong.log("length is :",contentLength)
-	--kong.log(whole)
-	ngx.arg[1]=whole
-	ngx.arg[2]=true
+	   whole = cjson.decode(whole)
+	   if json2xml.isArrayTable(whole) then
+	      local m={}
+	      m["requestId"]=requestId
+	      m["data"]=whole
+	      whole = json2xml.toxml(m)
+	   else
+	      whole["requestId"]=requestId
+	      whole = json2xml.toxml(whole)
+	   end
+	   ngx.ctx.buffered = nil
+	   ngx.arg[1]=whole
+	   ngx.arg[2]=true
 	end
 	end
   end
