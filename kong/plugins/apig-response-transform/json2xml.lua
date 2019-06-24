@@ -6,6 +6,13 @@ local indentation = "" --缩进
 local xml = ""
 local str = ""
 
+
+---firstToUpper 将字符串首字母大写
+---@param str  需要改写的字符串
+function firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
+
 ---isArrayTable
 ---@param t table 判断是否为数组类型的table
 ---@return boolean 数组类型返回true，否则返回false
@@ -45,7 +52,7 @@ end
 ---@return nil 动态更新xml字符串
 function ProcessResponseBody(value)
     if type(value) == "string" then
-        str = str .. indentation ..value .. "\n"
+        str = str .. indentation ..firstToUpper(value) .. "\n"
         xml = xml .. str
         str = " "
     elseif type(value) == "table" then
@@ -53,33 +60,33 @@ function ProcessResponseBody(value)
             --如果key为字符串，也就是说是json对象
             if type(name) == "string" then
                 if type(data) == "string" then
-                    str = str .. indentation .."<" .. name .. ">" .. data .. "</" .. name .. ">\n"
+                    str = str .. indentation .."<" .. firstToUpper(name) .. ">" .. data .. "</" .. firstToUpper(name) .. ">\n"
                     xml = xml .. str
                     str = ""
 
                 elseif type(data) == "number" or type(data) == "boolean" then
-                    str =  str .. indentation .. "<" .. name .. ">" .. tostring(data) .. "</" .. name .. ">\n"
+                    str =  str .. indentation .. "<" ..firstToUpper(name) .. ">" .. tostring(data) .. "</" .. firstToUpper(name) .. ">\n"
                     xml = xml .. str
                     str = ""
                 elseif type(data) == "table" then
                     --如果是数组类型的table，则遍历table并给每个元素添加标签
                     if M.isArrayTable(data) then
                         for tblName,tblData in pairs(data) do
-                            xml = xml .. indentation .. "<" .. name .. ">\n"
+                            xml = xml .. indentation .. "<" .. firstToUpper(name) .. ">\n"
                             indentation = indentation .. "\t"
                             ProcessResponseBody(tblData)
                             indentation = indentation:sub(1,#indentation-1)
-                            str = str .. indentation .."</" .. name .. ">\n"
+                            str = str .. indentation .."</" .. firstToUpper(name) .. ">\n"
                             xml = xml .. str
                             str = " "
                         end
                     --如果是json对象，加标签后对内容进行遍历
                     else
-                        xml = xml .. indentation .. "<" .. name .. ">\n"
+                        xml = xml .. indentation .. "<" .. firstToUpper(name) .. ">\n"
                         indentation = indentation .. "\t"
                         ProcessResponseBody(data)
                         indentation = indentation:sub(1,#indentation-1)
-                        str = str .. indentation .."</" .. name .. ">\n"
+                        str = str .. indentation .."</" .. firstToUpper(name) .. ">\n"
                         xml = xml .. str
                         str = " "
                     end
