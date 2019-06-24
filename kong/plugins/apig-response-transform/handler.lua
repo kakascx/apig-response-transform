@@ -54,22 +54,24 @@ function TransferPlugin:body_filter(config)
 	local whole = table.concat(buffered)
 	--将json格式的body解析为lua table
 	   whole = cjson.decode(whole)
-	--如果响应body为数组形式，将body包一层data并在data同级加一个requestid的键值对   
-	   if json2xml.isArrayTable(whole) then
-	      local m={}
-	      m["requestId"]=requestId
-	      m["data"]=whole
-	      whole = json2xml.toxml(m)
-	--如果为json对象，直接给body添加一个requestid的键值对   	  
-	   else
-	      whole["requestId"]=requestId
-	      whole = json2xml.toxml(whole)
+	  --如果requestId不为空，才对json进行改造，为了区分是否遵循openapi规范
+	   if requestId ~= nil then
+	     --如果响应body为数组形式，将body包一层data并在data同级加一个requestid的键值对   
+	      if json2xml.isArrayTable(whole) then
+	         local m={}
+	         m["requestId"]=requestId
+	         m["data"]=whole
+		 whole = m
+	     --如果为json对象，直接给body添加一个requestid的键值对   	  
+	      else
+	         whole["requestId"]=requestId
+	      end
 	   end
-	   ngx.ctx.buffered = nil
-	   ngx.arg[1]=whole
+	   ngx.arg[1]=json2xml.toxml(whole)
 	   ngx.arg[2]=true
+	   ngx.ctx.buffered = nil
 	end
-	end
+      end
   end
 end
 
