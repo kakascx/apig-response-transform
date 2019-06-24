@@ -35,8 +35,6 @@ end
 
 function TransferPlugin:body_filter(config)
   TransferPlugin.super.body_filter(self)
-local a=os.clock()
-kong.log("a is",a)
   --如果format参数为xml或null，同时响应body为json格式，进行转换
   if format == "xml" or format == nil then
      if string.find(contentType,"application/json") then
@@ -81,9 +79,6 @@ kong.log("a is",a)
 	end
       end
   end
-local b=os.clock
-kong.log("b is",b)
---kong.log("b-a is", b-a)
 end
 
 
