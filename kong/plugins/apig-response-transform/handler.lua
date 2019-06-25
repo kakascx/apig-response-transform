@@ -14,7 +14,9 @@ end
 function TransferPlugin:access(config)
   TransferPlugin.super.access(self)
   --获取请求参数中的format参数
-  format = kong.request.get_query_arg("Format")
+ -- format = kong.request.get_query_arg("Format")
+  format = config.format
+  kong.log("format is",format)
   action = kong.request.get_query_arg("Action")
 end
 

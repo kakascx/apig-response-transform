@@ -22,6 +22,7 @@ return {
                 type = "record",
                 fields = {
                     -- Describe your plugin's configuration's schema here.
+		{format = {type="string",default = "xml",one_of={"xml","json"}}}
                 },
             },
         },
